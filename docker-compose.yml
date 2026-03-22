@@ -1,0 +1,23 @@
+services:
+  arb_bot:
+    build: .
+    container_name: arb_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Persist HuggingFace model cache across restarts (~2GB for BGE-M3)
+      - hf_cache:/app/.cache/huggingface
+      # Mount Kalshi private key from host (never copy PEM into the image)
+      - ${KALSHI_PRIVATE_KEY_PATH}:/secrets/kalshi_private_key.pem:ro
+    environment:
+      # Override the path inside the container
+      KALSHI_PRIVATE_KEY_PATH: /secrets/kalshi_private_key.pem
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+volumes:
+  hf_cache:
